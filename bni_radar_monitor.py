@@ -118,8 +118,8 @@ def check_email_for_posts(email_addr, password, groups):
     group_names = [g.get("name","") for g in groups]
 
     try:
-        print(f"  Connecting to Outlook IMAP...")
-        mail = imaplib.IMAP4_SSL("outlook.office365.com", 993)
+        print(f"  Connecting to IMAP...")
+        mail = imaplib.IMAP4_SSL("mail.newmaxfs.co.uk", 993)
         mail.login(email_addr, password)
         mail.select("INBOX")
 
