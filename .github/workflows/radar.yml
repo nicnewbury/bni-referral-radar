@@ -32,9 +32,9 @@ jobs:
 
       - name: Run Referral Radar
         env:
-          FB_C_USER:        ${{ secrets.FB_C_USER }}
-          FB_XS:            ${{ secrets.FB_XS }}
-          FB_DATR:          ${{ secrets.FB_DATR }}
+          OUTLOOK_EMAIL:    ${{ secrets.OUTLOOK_EMAIL }}
+          OUTLOOK_PASSWORD: ${{ secrets.OUTLOOK_PASSWORD }}
+          
           CALLMEBOT_PHONE:  ${{ secrets.CALLMEBOT_PHONE }}
           CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
           FB_GROUPS:        ${{ secrets.FB_GROUPS }}
