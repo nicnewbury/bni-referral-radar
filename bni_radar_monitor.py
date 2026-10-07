@@ -76,13 +76,18 @@ def match_post(post_text):
                 break
     return matches
 
-def send_whatsapp_alert(group_name, post_text, matches):
-    preview = post_text[:200].replace('\n', ' ')
-    if len(post_text) > 200:
-        preview += "..."
-    lines = [f"BNI REFERRAL RADAR", f"Group: {group_name}", "", f'"{preview}"', "", f"{len(matches)} MATCH(ES) FOUND", ""]
+def send_whatsapp_alert(group_name, post_text, matches, poster_name="", post_link=""):
+    group_url = post_link if post_link else f"https://www.facebook.com/groups/1996301537277394"
+    lines = [f"BNI REFERRAL OPPORTUNITY"]
+    lines.append(f"Group: {group_name}")
+    if poster_name:
+        lines.append(f"Posted by: {poster_name}")
+    lines.append("")
     for m in matches:
-        lines += [f"Trade: {m['member']['trade']}", f"Refer: {m['member']['name']}", f"Co: {m['member']['company']}", f"Tel: {m['member']['phone']}", f"Keyword: {m['keyword']}", ""]
+        lines.append(f"Refer: {m['member']['name']} ({m['member']['trade']})")
+        lines.append(f"Tel: {m['member']['phone']}")
+    lines.append("")
+    lines.append(group_url)
     message = "\n".join(lines)
     encoded = quote(message)
     url = f"https://api.callmebot.com/whatsapp.php?phone={CALLMEBOT_PHONE}&text={encoded}&apikey={CALLMEBOT_APIKEY}"
@@ -157,8 +162,21 @@ def check_email_for_posts(email_addr, password, groups):
                     break
 
             body = get_email_body(msg)
+
+            # Extract poster name from subject (e.g. "John Smith posted in Horley Life")
+            poster = ""
+            poster_match = re.match(r'^(.+?)\s+posted in', subject, re.IGNORECASE)
+            if poster_match:
+                poster = poster_match.group(1).strip()
+
+            # Extract post link from email body
+            post_link = ""
+            link_match = re.search(r'https://www\.facebook\.com/groups/[^\s"\'<>]+', body)
+            if link_match:
+                post_link = link_match.group(0)
+
             if body and len(body) > 20:
-                posts.append({"text": body, "subject": subject, "group": matched_group})
+                posts.append({"text": body, "subject": subject, "group": matched_group, "poster": poster, "link": post_link})
                 print(f"  Email: {subject[:80]}")
 
             # Mark as read so we don't process it again
@@ -194,7 +212,7 @@ def main():
         matches = match_post(post["text"])
         if matches:
             print(f"  MATCH in '{post['group']}': {[m['member']['name'] for m in matches]}")
-            send_whatsapp_alert(post["group"], post["text"], matches)
+            send_whatsapp_alert(post["group"], post["text"], matches, post.get("poster",""), post.get("link",""))
             total_alerts += 1
             time.sleep(3)
         else:
